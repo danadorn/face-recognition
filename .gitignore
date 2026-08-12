@@ -1,0 +1,11 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+.vercel/
+.DS_Store
+*.onnx
+models/
+stored-faces/
+*.ipynb_checkpoints
+.pytest_cache/

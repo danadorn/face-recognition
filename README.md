@@ -1,1 +1,0 @@
-This project implements a Face Verification System that uses Haar Cascade for face detection and ArcFace ResNet100 for face verification. It allows users to upload two images and determines whether the faces in them belong to the same person or different people.
