@@ -9,3 +9,4 @@ models/
 stored-faces/
 *.ipynb_checkpoints
 .pytest_cache/
+face_recognition.ipynb
