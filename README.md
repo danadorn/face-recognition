@@ -1,14 +1,3 @@
----
-title: Face Verification
-emoji: 🧑‍🤝‍🧑
-colorFrom: blue
-colorTo: purple
-sdk: gradio
-sdk_version: 6.23.1
-app_file: app.py
-pinned: false
----
-
 # Face Recognition
 
 A Face Verification System built with:
@@ -22,34 +11,28 @@ person, using cosine similarity between ArcFace embeddings.
 
 ```bash
 pip install -r requirements.txt
-python app.py
+streamlit run app.py
 ```
 
-The app will be available at `http://localhost:7860`. On first run it
+The app will be available at `http://localhost:8501`. On first run it
 automatically downloads the Haar cascade XML and the ArcFace ONNX model
 (~250MB) into `models/` — no manual setup needed.
 
-## Deploy to Hugging Face Spaces
+## Deploy to Streamlit Community Cloud
 
-1. Create a new Space at https://huggingface.co/new-space, selecting the
-   **Gradio** SDK.
-2. Push this repository to the Space's git remote:
-   ```bash
-   git remote add space https://huggingface.co/spaces/<your-username>/<space-name>
-   git push space main
-   ```
-3. The Space builds from `requirements.txt` and launches `app.py`
-   automatically. The frontmatter at the top of this file configures the
-   Space (title, SDK, entry point).
-
-No model files need to be committed — `app.py` downloads them at startup.
+1. Push this repository to GitHub (models are gitignored — `app.py`
+   downloads them at startup, so nothing large needs to be committed).
+2. Go to https://share.streamlit.io, sign in, and click **New app**.
+3. Point it at this repo, the branch, and `app.py` as the entry point.
+4. Deploy. The first boot takes a bit longer while the ~250MB ArcFace
+   model downloads; it's cached afterward via `@st.cache_resource`.
 
 ## File structure
 
 ```
 .
-├── app.py              # Gradio app (auto-downloads models on startup)
+├── app.py              # Streamlit app (auto-downloads models on startup)
 ├── requirements.txt    # Python dependencies
-├── models/             # Downloaded at runtime (gitignored)
+├── models/              # Downloaded at runtime (gitignored)
 └── stored-faces/        # Runtime scratch output (gitignored)
 ```
