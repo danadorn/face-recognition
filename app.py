@@ -49,28 +49,24 @@ except Exception as e:
 # LOAD ARCFACE MODEL (OPENVINO)
 # ==========================================
 
-# Note: For Vercel deployment, you'll need to download the ArcFace model
-# and store it in your repository or use a pre-downloaded version
-
+ARCFACE_MODEL_URL = "https://media.githubusercontent.com/media/onnx/models/main/validated/vision/body_analysis/arcface/model/arcfaceresnet100-8.onnx"
 ARCFACE_MODEL_PATH = "models/arcfaceresnet100-8.onnx"
 
-# Check if model exists, if not provide a message
 if not os.path.exists(ARCFACE_MODEL_PATH):
-    print(f"Warning: {ARCFACE_MODEL_PATH} not found.")
-    print("Please download the ArcFace ResNet100 ONNX model and place it in the models/ directory")
+    print(f"Downloading {ARCFACE_MODEL_PATH}...")
+    urllib.request.urlretrieve(ARCFACE_MODEL_URL, ARCFACE_MODEL_PATH)
+    print("Download complete.")
+
+try:
+    core = ov.Core()
+    arcface_model = core.read_model(ARCFACE_MODEL_PATH)
+    compiled_arcface = core.compile_model(arcface_model, "CPU")
+    arcface_output = compiled_arcface.output(0)
+    print("ArcFace loaded successfully")
+except Exception as e:
+    print(f"Error loading ArcFace: {e}")
     compiled_arcface = None
     arcface_output = None
-else:
-    try:
-        core = ov.Core()
-        arcface_model = core.read_model(ARCFACE_MODEL_PATH)
-        compiled_arcface = core.compile_model(arcface_model, "CPU")
-        arcface_output = compiled_arcface.output(0)
-        print("ArcFace loaded successfully")
-    except Exception as e:
-        print(f"Error loading ArcFace: {e}")
-        compiled_arcface = None
-        arcface_output = None
 
 # ==========================================
 # FACE VERIFICATION CONSTANTS
