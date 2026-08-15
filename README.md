@@ -4,8 +4,21 @@ A Face Verification System built with:
 - **Haar Cascade** for face detection
 - **ArcFace ResNet100** (via OpenVINO) for face verification
 
-Upload two face photos and the app reports whether they belong to the same
-person, using cosine similarity between ArcFace embeddings.
+Enter a reference name, upload or scan Face A, then upload or scan Face B to
+check. If Face B has a cosine similarity score of at least `0.70` against
+Face A, the app displays the reference name. Otherwise, it displays
+**NOT MATCH**.
+
+Each face can use either:
+- **Upload Image**
+- **Scan with Camera** using `streamlit-webrtc`
+
+The camera option captures from the user's browser instead of the server
+camera. The WebRTC frame processor corrects mirrored camera frames before both
+the live preview and the saved frame enter the face detection and ArcFace
+pipeline. The UI uses a custom dark-mode card layout with styled controls and
+result cards. Comparison results open in a native Streamlit dialog modal so the
+decision is shown immediately after clicking Compare.
 
 ## Run locally
 
