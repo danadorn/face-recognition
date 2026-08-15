@@ -2,3 +2,5 @@ opencv-python-headless==4.13.0.92
 numpy
 streamlit
 openvino
+streamlit-webrtc
+av
