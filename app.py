@@ -5,12 +5,101 @@ import urllib.request
 import hashlib
 import threading
 import base64
+import json
 import textwrap
 from pathlib import Path
 import streamlit as st
+import streamlit.components.v1 as components
 import openvino as ov
 
-st.set_page_config(page_title="Face Recognition", page_icon=Path("face.png"), layout="wide")
+SEO_TITLE = "Face Recognition"
+SEO_DESCRIPTION = (
+    "Compare two face images with Haar Cascade detection, ArcFace embeddings, "
+    "and OpenVINO CPU inference in a Streamlit face verification app."
+)
+SEO_URL = "https://face-recognition-ai.streamlit.app/"
+SEO_KEYWORDS = (
+    "face recognition, face verification, ArcFace, OpenVINO, Haar Cascade, "
+    "AI face comparison, Streamlit"
+)
+
+st.set_page_config(page_title=SEO_TITLE, page_icon=Path("face.png"), layout="wide")
+
+
+def inject_seo_metadata():
+    """Add client-side metadata for browsers and social previews."""
+    components.html(
+        f"""
+        <script>
+        (() => {{
+            const doc = window.parent.document;
+            const setMeta = (selector, attrs) => {{
+                let element = doc.head.querySelector(selector);
+                if (!element) {{
+                    element = doc.createElement("meta");
+                    doc.head.appendChild(element);
+                }}
+                Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+            }};
+            const setLink = (selector, attrs) => {{
+                let element = doc.head.querySelector(selector);
+                if (!element) {{
+                    element = doc.createElement("link");
+                    doc.head.appendChild(element);
+                }}
+                Object.entries(attrs).forEach(([key, value]) => element.setAttribute(key, value));
+            }};
+
+            doc.title = {json.dumps(SEO_TITLE)};
+            setMeta('meta[name="description"]', {{
+                name: "description",
+                content: {json.dumps(SEO_DESCRIPTION)}
+            }});
+            setMeta('meta[name="keywords"]', {{
+                name: "keywords",
+                content: {json.dumps(SEO_KEYWORDS)}
+            }});
+            setMeta('meta[property="og:title"]', {{
+                property: "og:title",
+                content: {json.dumps(SEO_TITLE)}
+            }});
+            setMeta('meta[property="og:description"]', {{
+                property: "og:description",
+                content: {json.dumps(SEO_DESCRIPTION)}
+            }});
+            setMeta('meta[property="og:type"]', {{
+                property: "og:type",
+                content: "website"
+            }});
+            setMeta('meta[property="og:url"]', {{
+                property: "og:url",
+                content: {json.dumps(SEO_URL)}
+            }});
+            setMeta('meta[name="twitter:card"]', {{
+                name: "twitter:card",
+                content: "summary"
+            }});
+            setMeta('meta[name="twitter:title"]', {{
+                name: "twitter:title",
+                content: {json.dumps(SEO_TITLE)}
+            }});
+            setMeta('meta[name="twitter:description"]', {{
+                name: "twitter:description",
+                content: {json.dumps(SEO_DESCRIPTION)}
+            }});
+            setLink('link[rel="canonical"]', {{
+                rel: "canonical",
+                href: {json.dumps(SEO_URL)}
+            }});
+        }})();
+        </script>
+        """,
+        height=0,
+        width=0,
+    )
+
+
+inject_seo_metadata()
 
 # ==========================================
 # SETUP
