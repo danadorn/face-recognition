@@ -8,7 +8,7 @@ from pathlib import Path
 import streamlit as st
 import openvino as ov
 
-st.set_page_config(page_title="Face Verification", page_icon=":material/face:", layout="wide")
+st.set_page_config(page_title="Face Recognition", page_icon=Path("face.png"), layout="wide")
 
 # ==========================================
 # SETUP
