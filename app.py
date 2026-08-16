@@ -70,28 +70,162 @@ CAMERA_FRAME_IS_MIRRORED = True
 # UI STYLING
 # ==========================================
 
-def inject_custom_css():
-    """Apply a polished dark SaaS visual layer over Streamlit widgets."""
-    st.markdown(
-        """
+def get_theme_palette(theme_mode):
+    """Return UI colors for the selected visual theme."""
+    if theme_mode == "Light":
+        return {
+            "bg": "#f8fafc",
+            "surface": "#ffffff",
+            "surface_strong": "#f1f5f9",
+            "surface_soft": "#f8fafc",
+            "border": "rgba(15, 23, 42, 0.12)",
+            "border_strong": "rgba(255, 145, 0, 0.52)",
+            "text": "#0f172a",
+            "muted": "#64748b",
+            "accent": "#FF9100",
+            "accent_strong": "#FFB14A",
+            "accent_soft": "rgba(255, 145, 0, 0.14)",
+            "accent_border": "rgba(255, 145, 0, 0.40)",
+            "avatar_text": "#9a3412",
+            "panel_bg": "rgba(255, 255, 255, 0.94)",
+            "card_bg": "rgba(255, 255, 255, 0.98)",
+            "pill_bg": "#fff7ed",
+            "label_text": "#1e293b",
+            "field_bg": "#ffffff",
+            "radio_bg": "#f1f5f9",
+            "uploader_bg": "#f8fafc",
+            "uploader_border": "rgba(100, 116, 139, 0.36)",
+            "uploader_button_bg": "#ffffff",
+            "uploader_button_hover_bg": "#fff7ed",
+            "uploader_button_text": "#0f172a",
+            "uploader_button_border": "rgba(100, 116, 139, 0.28)",
+            "disabled_bg": "#e2e8f0",
+            "disabled_text": "#64748b",
+            "reset_text": "#0f172a",
+            "alert_bg": "#fff7ed",
+            "alert_text": "#7c2d12",
+            "alert_border": "rgba(255, 145, 0, 0.28)",
+            "alert_icon_bg": "rgba(255, 145, 0, 0.14)",
+            "shadow": "0 22px 55px rgba(15, 23, 42, 0.10)",
+            "soft_shadow": "0 14px 34px rgba(15, 23, 42, 0.08)",
+            "card_shadow": "0 18px 40px rgba(15, 23, 42, 0.10)",
+            "hover_shadow": "0 24px 55px rgba(15, 23, 42, 0.14)",
+            "image_shadow": "0 16px 34px rgba(15, 23, 42, 0.12)",
+            "button_shadow": "0 16px 34px rgba(255, 145, 0, 0.24)",
+            "result_bg": "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(248,250,252,0.98))",
+            "result_panel_bg": "#ffffff",
+            "progress_bg": "#e2e8f0",
+            "divider": "#e2e8f0",
+        }
+
+    return {
+        "bg": "#000000",
+        "surface": "#0b0b0b",
+        "surface_strong": "#151515",
+        "surface_soft": "#050505",
+        "border": "rgba(148, 163, 184, 0.18)",
+        "border_strong": "rgba(255, 145, 0, 0.42)",
+        "text": "#f8fafc",
+        "muted": "#94a3b8",
+        "accent": "#FF9100",
+        "accent_strong": "#FFB14A",
+        "accent_soft": "rgba(255, 145, 0, 0.16)",
+        "accent_border": "rgba(255, 145, 0, 0.38)",
+        "avatar_text": "#FFE0B3",
+        "panel_bg": "rgba(11, 11, 11, 0.92)",
+        "card_bg": "rgba(11, 11, 11, 0.96)",
+        "pill_bg": "rgba(5, 5, 5, 0.82)",
+        "label_text": "#f3f4f6",
+        "field_bg": "rgba(5, 5, 5, 0.90)",
+        "radio_bg": "rgba(5, 5, 5, 0.72)",
+        "uploader_bg": "rgba(8, 8, 8, 0.82)",
+        "uploader_border": "rgba(148, 163, 184, 0.42)",
+        "uploader_button_bg": "#111827",
+        "uploader_button_hover_bg": "#1f2937",
+        "uploader_button_text": "#f8fafc",
+        "uploader_button_border": "rgba(148, 163, 184, 0.28)",
+        "disabled_bg": "#2a2a2a",
+        "disabled_text": "#94a3b8",
+        "reset_text": "#f3f4f6",
+        "alert_bg": "rgba(255, 145, 0, 0.10)",
+        "alert_text": "#ffe0b3",
+        "alert_border": "rgba(255, 145, 0, 0.24)",
+        "alert_icon_bg": "rgba(255, 145, 0, 0.16)",
+        "shadow": "0 22px 55px rgba(0, 0, 0, 0.36)",
+        "soft_shadow": "0 14px 34px rgba(0, 0, 0, 0.20)",
+        "card_shadow": "0 18px 40px rgba(0, 0, 0, 0.26)",
+        "hover_shadow": "0 24px 55px rgba(0, 0, 0, 0.34)",
+        "image_shadow": "0 16px 34px rgba(0, 0, 0, 0.28)",
+        "button_shadow": "0 16px 34px rgba(255, 145, 0, 0.34)",
+        "result_bg": "linear-gradient(180deg, rgba(15,15,15,0.98), rgba(5,5,5,0.98))",
+        "result_panel_bg": "#050505",
+        "progress_bg": "#2a2a2a",
+        "divider": "#374151",
+    }
+
+
+def build_theme_variables(theme_mode):
+    """Build CSS variables for the selected theme."""
+    palette = get_theme_palette(theme_mode)
+    css_names = {
+        "bg": "bg",
+        "surface": "surface",
+        "surface_strong": "surface-strong",
+        "surface_soft": "surface-soft",
+        "border": "border",
+        "border_strong": "border-strong",
+        "text": "text",
+        "muted": "muted",
+        "accent": "accent",
+        "accent_strong": "accent-strong",
+        "accent_soft": "accent-soft",
+        "accent_border": "accent-border",
+        "avatar_text": "avatar-text",
+        "panel_bg": "panel-bg",
+        "card_bg": "card-bg",
+        "pill_bg": "pill-bg",
+        "label_text": "label-text",
+        "field_bg": "field-bg",
+        "radio_bg": "radio-bg",
+        "uploader_bg": "uploader-bg",
+        "uploader_border": "uploader-border",
+        "uploader_button_bg": "uploader-button-bg",
+        "uploader_button_hover_bg": "uploader-button-hover-bg",
+        "uploader_button_text": "uploader-button-text",
+        "uploader_button_border": "uploader-button-border",
+        "disabled_bg": "disabled-bg",
+        "disabled_text": "disabled-text",
+        "reset_text": "reset-text",
+        "alert_bg": "alert-bg",
+        "alert_text": "alert-text",
+        "alert_border": "alert-border",
+        "alert_icon_bg": "alert-icon-bg",
+        "shadow": "shadow",
+        "soft_shadow": "soft-shadow",
+        "card_shadow": "card-shadow",
+        "hover_shadow": "hover-shadow",
+        "image_shadow": "image-shadow",
+        "button_shadow": "button-shadow",
+    }
+    lines = [f"                --{css_name}: {palette[key]};" for key, css_name in css_names.items()]
+    lines.extend(
+        [
+            "                --info: var(--accent);",
+            "                --success: #22c55e;",
+            "                --danger: #ef4444;",
+            "                --radius: 20px;",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def inject_custom_css(theme_mode):
+    """Apply a polished visual layer over Streamlit widgets."""
+    theme_variables = build_theme_variables(theme_mode)
+    css = """
         <style>
             :root {
-                --bg: #000000;
-                --surface: #0b0b0b;
-                --surface-strong: #151515;
-                --surface-soft: #050505;
-                --border: rgba(148, 163, 184, 0.18);
-                --border-strong: rgba(255, 145, 0, 0.42);
-                --text: #f8fafc;
-                --muted: #94a3b8;
-                --accent: #FF9100;
-                --accent-strong: #FFB14A;
-                --accent-soft: rgba(255, 145, 0, 0.16);
-                --info: #FF9100;
-                --success: #22c55e;
-                --danger: #ef4444;
-                --radius: 20px;
-                --shadow: 0 22px 55px rgba(0, 0, 0, 0.36);
+__THEME_VARIABLES__
             }
 
             *,
@@ -110,8 +244,17 @@ def inject_custom_css():
             }
 
             .stApp {
-                background: #000000;
+                background: var(--bg);
                 color: var(--text);
+            }
+
+            [data-testid="stHeader"] {
+                background: var(--bg);
+            }
+
+            div[role="dialog"] {
+                background: var(--panel-bg) !important;
+                color: var(--text) !important;
             }
 
             [data-testid="stAppViewContainer"] > .main .block-container {
@@ -141,7 +284,7 @@ def inject_custom_css():
                 padding: 30px;
                 border: 1px solid var(--border);
                 border-radius: 28px;
-                background: rgba(11, 11, 11, 0.92);
+                background: var(--panel-bg);
                 box-shadow: var(--shadow);
             }
 
@@ -166,7 +309,7 @@ def inject_custom_css():
             .app-subtitle {
                 max-width: 760px;
                 margin: 16px 0 22px;
-                color: #d1d5db;
+                color: var(--label-text);
                 font-size: 16px;
                 line-height: 1.7;
                 overflow-wrap: break-word;
@@ -185,8 +328,8 @@ def inject_custom_css():
                 padding: 8px 12px;
                 border: 1px solid var(--border);
                 border-radius: 999px;
-                background: rgba(5, 5, 5, 0.82);
-                color: #f3f4f6;
+                background: var(--pill-bg);
+                color: var(--label-text);
                 font-size: 13px;
                 font-weight: 700;
             }
@@ -206,8 +349,8 @@ def inject_custom_css():
                 padding: 18px 20px;
                 border: 1px solid var(--border);
                 border-radius: 18px;
-                background: rgba(11, 11, 11, 0.88);
-                box-shadow: 0 14px 34px rgba(0, 0, 0, 0.20);
+                background: var(--panel-bg);
+                box-shadow: var(--soft-shadow);
             }
 
             .st-key-reference_name_panel [data-testid="stTextInput"] {
@@ -257,8 +400,8 @@ def inject_custom_css():
                 padding: 24px;
                 border: 1px solid var(--border);
                 border-radius: var(--radius);
-                background: rgba(11, 11, 11, 0.96);
-                box-shadow: 0 18px 40px rgba(0, 0, 0, 0.26);
+                background: var(--card-bg);
+                box-shadow: var(--card-shadow);
                 box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
@@ -269,7 +412,7 @@ def inject_custom_css():
             .st-key-face_b_card:hover {
                 border-color: var(--border-strong);
                 transform: translateY(-1px);
-                box-shadow: 0 24px 55px rgba(0, 0, 0, 0.34);
+                box-shadow: var(--hover-shadow);
             }
 
             .input-card-header {
@@ -289,8 +432,8 @@ def inject_custom_css():
                 flex: 0 0 auto;
                 border-radius: 16px;
                 background: var(--accent-soft);
-                border: 1px solid rgba(255, 145, 0, 0.38);
-                color: #FFE0B3;
+                border: 1px solid var(--accent-border);
+                color: var(--avatar-text);
                 font-size: 18px;
                 font-weight: 850;
             }
@@ -320,14 +463,14 @@ def inject_custom_css():
             [data-testid="stTextInput"] label,
             [data-testid="stFileUploader"] label,
             [data-testid="stRadio"] label {
-                color: #f3f4f6 !important;
+                color: var(--label-text) !important;
                 font-weight: 720;
             }
 
             [data-testid="stTextInput"] input {
                 border: 1px solid var(--border);
                 border-radius: 14px;
-                background: rgba(5, 5, 5, 0.90);
+                background: var(--field-bg);
                 color: var(--text);
                 min-height: 44px;
             }
@@ -355,7 +498,7 @@ def inject_custom_css():
                 margin-top: 4px;
                 border: 1px solid var(--border);
                 border-radius: 999px;
-                background: rgba(5, 5, 5, 0.72);
+                background: var(--radio-bg);
                 box-sizing: border-box;
             }
 
@@ -415,6 +558,22 @@ def inject_custom_css():
                 box-shadow: 0 10px 24px rgba(255, 145, 0, 0.28);
             }
 
+            div[role="radiogroup"] label:not(:has(input:checked)) {
+                color: var(--muted) !important;
+            }
+
+            div[role="radiogroup"] label:not(:has(input:checked)) p,
+            div[role="radiogroup"] label:not(:has(input:checked)) [data-testid="stMarkdownContainer"] p {
+                color: var(--muted) !important;
+                opacity: 1 !important;
+            }
+
+            div[role="radiogroup"] label:has(input:checked) p,
+            div[role="radiogroup"] label:has(input:checked) [data-testid="stMarkdownContainer"] p {
+                color: white !important;
+                opacity: 1 !important;
+            }
+
             div[role="radiogroup"] label > div:first-child,
             div[role="radiogroup"] label span:first-child,
             div[role="radiogroup"] label svg {
@@ -427,8 +586,8 @@ def inject_custom_css():
                 max-width: none !important;
                 min-height: 68px;
                 border-radius: 18px;
-                border: 1px dashed rgba(148, 163, 184, 0.42);
-                background: rgba(8, 8, 8, 0.82);
+                border: 1px dashed var(--uploader-border);
+                background: var(--uploader-bg);
                 box-sizing: border-box;
                 transition: border-color 150ms ease, background 150ms ease;
             }
@@ -445,6 +604,27 @@ def inject_custom_css():
                 overflow-wrap: break-word;
             }
 
+            [data-testid="stFileUploader"] button {
+                border: 1px solid var(--uploader-button-border) !important;
+                border-radius: 12px !important;
+                background: var(--uploader-button-bg) !important;
+                color: var(--uploader-button-text) !important;
+                box-shadow: none !important;
+            }
+
+            [data-testid="stFileUploader"] button *,
+            [data-testid="stFileUploader"] button svg {
+                color: var(--uploader-button-text) !important;
+                fill: currentColor !important;
+                stroke: currentColor !important;
+            }
+
+            [data-testid="stFileUploader"] button:hover {
+                border-color: var(--accent-border) !important;
+                background: var(--uploader-button-hover-bg) !important;
+                color: var(--uploader-button-text) !important;
+            }
+
             [data-testid="stFileUploader"] section:hover {
                 border-color: var(--accent-strong);
                 background: rgba(255, 145, 0, 0.10);
@@ -459,11 +639,11 @@ def inject_custom_css():
             [data-testid="stImage"] img {
                 border-radius: 18px;
                 border: 1px solid var(--border);
-                box-shadow: 0 16px 34px rgba(0, 0, 0, 0.28);
+                box-shadow: var(--image-shadow);
             }
 
             [data-testid="stImageCaption"] {
-                color: #d1d5db;
+                color: var(--muted);
                 font-weight: 700;
             }
 
@@ -485,15 +665,15 @@ def inject_custom_css():
                 min-height: 48px;
                 border: 1px solid rgba(148, 163, 184, 0.18) !important;
                 border-radius: 999px !important;
-                background: #2a2a2a !important;
-                color: #94a3b8 !important;
+                background: var(--disabled-bg) !important;
+                color: var(--disabled-text) !important;
                 box-shadow: none !important;
                 opacity: 1 !important;
             }
 
             .stButton > button:disabled *,
             button:disabled * {
-                color: #94a3b8 !important;
+                color: var(--disabled-text) !important;
             }
 
             .st-key-compare_button button,
@@ -502,26 +682,35 @@ def inject_custom_css():
                 border: 0 !important;
                 background: linear-gradient(135deg, var(--accent), var(--accent-strong)) !important;
                 color: white !important;
-                box-shadow: 0 16px 34px rgba(255, 145, 0, 0.34);
+                box-shadow: var(--button-shadow);
             }
 
             .st-key-compare_button button:disabled,
             div[data-testid="stButton"] button[kind="primary"]:disabled {
-                background: #2a2a2a !important;
-                color: #94a3b8 !important;
+                background: var(--disabled-bg) !important;
+                color: var(--disabled-text) !important;
                 box-shadow: none !important;
             }
 
             .st-key-reset_button button {
                 border: 1px solid rgba(148, 163, 184, 0.34) !important;
                 background: transparent !important;
-                color: #f3f4f6 !important;
+                color: var(--reset-text) !important;
             }
 
             .st-key-reset_button button:hover {
                 border-color: var(--accent-strong) !important;
-                color: white !important;
+                color: var(--text) !important;
                 background: rgba(255, 145, 0, 0.12) !important;
+            }
+
+            .st-key-theme_panel {
+                width: min(280px, 100%);
+                margin: 0 0 18px auto;
+            }
+
+            .st-key-theme_panel div[role="radiogroup"] {
+                border-radius: 999px;
             }
 
             .st-key-action_row {
@@ -586,10 +775,10 @@ def inject_custom_css():
                 gap: 12px;
                 margin-top: 18px;
                 padding: 14px 16px;
-                border: 1px solid rgba(255, 145, 0, 0.24);
+                border: 1px solid var(--alert-border);
                 border-radius: 16px;
-                background: rgba(255, 145, 0, 0.10);
-                color: #ffe0b3;
+                background: var(--alert-bg);
+                color: var(--alert-text);
                 font-size: 14px;
                 line-height: 1.55;
             }
@@ -601,7 +790,7 @@ def inject_custom_css():
                 place-items: center;
                 flex: 0 0 auto;
                 border-radius: 50%;
-                background: rgba(255, 145, 0, 0.16);
+                background: var(--alert-icon-bg);
                 color: var(--info);
                 font-weight: 900;
             }
@@ -770,9 +959,8 @@ def inject_custom_css():
                 }
             }
         </style>
-        """,
-        unsafe_allow_html=True,
-    )
+        """
+    st.markdown(css.replace("__THEME_VARIABLES__", theme_variables), unsafe_allow_html=True)
 
 
 # ==========================================
@@ -962,18 +1150,30 @@ def render_camera_snapshot_capture(slot_key, widget_key, stored_label, capture_l
 
 def build_result_html(similarity, is_match, result_label, face_a_name):
     """Build the styled result card shown after verification"""
+    palette = get_theme_palette(st.session_state.get("app_theme", "Dark"))
+    if st.session_state.get("app_theme") == "Light":
+        match_badge_bg = "#dcfce7"
+        match_badge_text = "#166534"
+        no_match_badge_bg = "#fee2e2"
+        no_match_badge_text = "#991b1b"
+    else:
+        match_badge_bg = "#052e16"
+        match_badge_text = "#86efac"
+        no_match_badge_bg = "#450a0a"
+        no_match_badge_text = "#fca5a5"
+
     if is_match:
         verdict = result_label
         accent = "#22c55e"
-        badge_bg = "#052e16"
-        badge_text = "#86efac"
+        badge_bg = match_badge_bg
+        badge_text = match_badge_text
         status_icon = "MATCH"
         verdict_caption = "Face B matched the reference identity"
     else:
         verdict = "NOT MATCH"
         accent = "#ef4444"
-        badge_bg = "#450a0a"
-        badge_text = "#fca5a5"
+        badge_bg = no_match_badge_bg
+        badge_text = no_match_badge_text
         status_icon = "NO MATCH"
         verdict_caption = "Face B did not match the reference identity"
 
@@ -984,15 +1184,15 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
         max-width:850px;
         margin:28px auto 12px;
         font-family:Inter,Arial,sans-serif;
-        color:#f9fafb;
+        color:{palette["text"]};
     ">
         <div style="
-            background:linear-gradient(180deg, rgba(15,15,15,0.98), rgba(5,5,5,0.98));
-            border:1px solid rgba(148,163,184,0.18);
+            background:{palette["result_bg"]};
+            border:1px solid {palette["border"]};
             border-top:5px solid {accent};
             border-radius:28px;
             padding:34px;
-            box-shadow:0 24px 60px rgba(0,0,0,0.38);
+            box-shadow:{palette["hover_shadow"]};
         ">
             <div style="text-align:center; margin-bottom:30px;">
                 <div style="
@@ -1029,7 +1229,7 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
                 <h1 style="margin:0; color:{accent}; font-size:clamp(40px, 6vw, 68px); font-weight:900; line-height:1;">
                     {verdict}
                 </h1>
-                <p style="margin:12px 0 0 0; color:#d1d5db; font-size:15px;">
+                <p style="margin:12px 0 0 0; color:{palette["muted"]}; font-size:15px;">
                     {verdict_caption}
                 </p>
             </div>
@@ -1039,24 +1239,24 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
                 gap:14px;
                 margin-bottom:18px;
             ">
-                <div style="background:#050505; border:1px solid rgba(148,163,184,0.16); border-radius:18px; padding:18px; text-align:center;">
-                    <div style="color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Similarity</div>
+                <div style="background:{palette["result_panel_bg"]}; border:1px solid {palette["border"]}; border-radius:18px; padding:18px; text-align:center;">
+                    <div style="color:{palette["muted"]}; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Similarity</div>
                     <div style="color:{accent}; font-size:30px; font-weight:900; margin-top:6px;">{similarity:.4f}</div>
                 </div>
-                <div style="background:#050505; border:1px solid rgba(148,163,184,0.16); border-radius:18px; padding:18px; text-align:center;">
-                    <div style="color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Match Threshold</div>
-                    <div style="color:#f8fafc; font-size:30px; font-weight:900; margin-top:6px;">{THRESHOLD:.2f}</div>
+                <div style="background:{palette["result_panel_bg"]}; border:1px solid {palette["border"]}; border-radius:18px; padding:18px; text-align:center;">
+                    <div style="color:{palette["muted"]}; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Match Threshold</div>
+                    <div style="color:{palette["text"]}; font-size:30px; font-weight:900; margin-top:6px;">{THRESHOLD:.2f}</div>
                 </div>
-                <div style="background:#050505; border:1px solid rgba(148,163,184,0.16); border-radius:18px; padding:18px; text-align:center;">
-                    <div style="color:#94a3b8; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Reference Name</div>
-                    <div style="color:#f8fafc; font-size:30px; font-weight:900; margin-top:6px;">{face_a_name}</div>
+                <div style="background:{palette["result_panel_bg"]}; border:1px solid {palette["border"]}; border-radius:18px; padding:18px; text-align:center;">
+                    <div style="color:{palette["muted"]}; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.08em;">Reference Name</div>
+                    <div style="color:{palette["text"]}; font-size:30px; font-weight:900; margin-top:6px;">{face_a_name}</div>
                 </div>
             </div>
             <div style="
                 width:100%;
                 height:11px;
                 border-radius:999px;
-                background:#2a2a2a;
+                background:{palette["progress_bg"]};
                 overflow:hidden;
                 margin:2px 0 18px;
             ">
@@ -1068,19 +1268,19 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
                 "></div>
             </div>
             <div style="
-                background:#050505;
+                background:{palette["result_panel_bg"]};
                 border-left:4px solid {accent};
                 border-radius:16px;
                 padding:16px 18px;
             ">
-                <div style="color:#f9fafb; font-weight:800; margin-bottom:7px;">Decision Analysis</div>
-                <div style="color:#d1d5db; font-size:13px; line-height:1.7;">
+                <div style="color:{palette["text"]}; font-weight:800; margin-bottom:7px;">Decision Analysis</div>
+                <div style="color:{palette["muted"]}; font-size:13px; line-height:1.7;">
                     The cosine similarity score is
-                    <strong style="color:#ffffff;">{similarity:.4f}</strong>.
+                    <strong style="color:{palette["text"]};">{similarity:.4f}</strong>.
                     This score is
                     <strong style="color:{accent};">{"above" if is_match else "below"}</strong>
                     the current verification threshold of
-                    <strong style="color:#ffffff;">{THRESHOLD:.2f}</strong>.
+                    <strong style="color:{palette["text"]};">{THRESHOLD:.2f}</strong>.
                     Therefore, Face B is classified as
                     <strong style="color:{accent};">{verdict}</strong>.
                 </div>
@@ -1088,8 +1288,8 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
             <div style="
                 margin-top:16px;
                 padding-top:14px;
-                border-top:1px solid #374151;
-                color:#6b7280;
+                border-top:1px solid {palette["divider"]};
+                color:{palette["muted"]};
                 text-align:center;
                 font-size:11px;
             ">
@@ -1128,19 +1328,20 @@ def verify_stored_faces(face_a, face_b, face_a_name):
 @st.dialog("Face match result", width="large")
 def show_result_dialog(similarity, threshold, reference_name, is_match, image_a, image_b, result_html):
     """Render the comparison output in a modal dialog."""
+    palette = get_theme_palette(st.session_state.get("app_theme", "Dark"))
     st.markdown(
         f"""
         <div style="
             margin:0 0 12px;
-            color:#94a3b8;
+            color:{palette["muted"]};
             font-size:13px;
             font-weight:700;
         ">
-            Reference: <span style="color:#f8fafc;">{reference_name}</span>
+            Reference: <span style="color:{palette["text"]};">{reference_name}</span>
             &nbsp; • &nbsp;
-            Similarity: <span style="color:#f8fafc;">{similarity:.4f}</span>
+            Similarity: <span style="color:{palette["text"]};">{similarity:.4f}</span>
             &nbsp; • &nbsp;
-            Threshold: <span style="color:#f8fafc;">{threshold:.2f}</span>
+            Threshold: <span style="color:{palette["text"]};">{threshold:.2f}</span>
             &nbsp; • &nbsp;
             Decision: <span style="color:{'#22c55e' if is_match else '#ef4444'};">{"MATCH" if is_match else "NOT MATCH"}</span>
         </div>
@@ -1169,7 +1370,17 @@ def reset_captured_faces():
 # STREAMLIT INTERFACE
 # ==========================================
 
-inject_custom_css()
+st.session_state.setdefault("app_theme", "Dark")
+inject_custom_css(st.session_state["app_theme"])
+
+with st.container(key="theme_panel"):
+    st.radio(
+        "Theme",
+        ["Dark", "Light"],
+        horizontal=True,
+        key="app_theme",
+        label_visibility="collapsed",
+    )
 
 st.markdown(
     """
