@@ -3,6 +3,7 @@ import cv2
 import numpy as np
 import urllib.request
 import hashlib
+import threading
 from pathlib import Path
 import streamlit as st
 import openvino as ov
@@ -48,12 +49,14 @@ def load_models():
     core = ov.Core()
     arcface_model = core.read_model(ARCFACE_MODEL_PATH)
     compiled_arcface = core.compile_model(arcface_model, "CPU")
+    arcface_input = compiled_arcface.input(0)
     arcface_output = compiled_arcface.output(0)
+    arcface_infer_lock = threading.Lock()
 
-    return haar_cascade, compiled_arcface, arcface_output
+    return haar_cascade, compiled_arcface, arcface_input, arcface_output, arcface_infer_lock
 
 
-haar_cascade, compiled_arcface, arcface_output = load_models()
+haar_cascade, compiled_arcface, arcface_input, arcface_output, arcface_infer_lock = load_models()
 
 # ==========================================
 # FACE VERIFICATION CONSTANTS
@@ -632,7 +635,11 @@ def preprocess_arcface(face_bgr):
 def get_face_embedding(face):
     """Get ArcFace embedding for a face"""
     face_tensor = preprocess_arcface(face)
-    result = compiled_arcface([face_tensor])
+
+    with arcface_infer_lock:
+        infer_request = compiled_arcface.create_infer_request()
+        result = infer_request.infer({arcface_input: face_tensor})
+
     embedding = result[arcface_output][0]
     embedding = embedding / (np.linalg.norm(embedding) + 1e-10)
     return embedding
@@ -678,7 +685,10 @@ def process_face_image(image_rgb):
     if face is None:
         return None, "No face detected. Try a clearer front-facing image."
 
-    embedding = get_face_embedding(face)
+    try:
+        embedding = get_face_embedding(face)
+    except RuntimeError:
+        return None, "Face embedding failed. Try another photo or restart the app if this keeps happening."
 
     return {
         "image_bgr": image_bgr,
