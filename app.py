@@ -3,21 +3,9 @@ import cv2
 import numpy as np
 import urllib.request
 import hashlib
-import threading
 from pathlib import Path
 import streamlit as st
 import openvino as ov
-
-try:
-    import av
-    from streamlit_webrtc import WebRtcMode, VideoProcessorBase, webrtc_streamer
-    STREAMLIT_WEBRTC_AVAILABLE = True
-except ImportError:
-    av = None
-    WebRtcMode = None
-    VideoProcessorBase = object
-    webrtc_streamer = None
-    STREAMLIT_WEBRTC_AVAILABLE = False
 
 st.set_page_config(page_title="Face Verification", page_icon=":material/face:", layout="wide")
 
@@ -74,22 +62,6 @@ haar_cascade, compiled_arcface, arcface_output = load_models()
 DEFAULT_REFERENCE_NAME = "Reference"
 THRESHOLD = 0.70
 CAMERA_FRAME_IS_MIRRORED = True
-RTC_CONFIGURATION = {"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]}
-CAMERA_MEDIA_CONSTRAINTS = {
-    "video": {
-        "facingMode": "user",
-        "width": {"ideal": 1280, "min": 960},
-        "height": {"ideal": 720, "min": 540},
-        "frameRate": {"ideal": 30},
-    },
-    "audio": False,
-}
-CAMERA_VIDEO_HTML_ATTRS = {
-    "autoPlay": True,
-    "muted": True,
-    "playsInline": True,
-    "style": {"width": "100%", "height": "auto"},
-}
 
 # ==========================================
 # UI STYLING
@@ -442,6 +414,12 @@ def inject_custom_css():
                 background: rgba(255, 145, 0, 0.10);
             }
 
+            [data-testid="stCameraInput"] video,
+            [data-testid="stCameraInput"] img {
+                transform: scaleX(-1);
+                transform-origin: center;
+            }
+
             [data-testid="stImage"] img {
                 border-radius: 18px;
                 border: 1px solid var(--border);
@@ -754,63 +732,31 @@ def process_uploaded_image_input(slot_key, image_file, stored_label):
     store_processed_face_image(slot_key, image_rgb, stored_label, f"{signature}:upload")
 
 
-class OrientationCorrectingVideoProcessor(VideoProcessorBase):
-    """Correct camera frames before preview display and before capture storage."""
-
-    def __init__(self):
-        self._lock = threading.Lock()
-        self._latest_frame_rgb = None
-
-    def recv(self, frame):
-        image_bgr = frame.to_ndarray(format="bgr24")
-
-        if CAMERA_FRAME_IS_MIRRORED:
-            image_bgr = cv2.flip(image_bgr, 1)
-
-        image_rgb = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2RGB)
-        with self._lock:
-            self._latest_frame_rgb = image_rgb.copy()
-
-        return av.VideoFrame.from_ndarray(image_bgr, format="bgr24")
-
-    def get_latest_frame_rgb(self):
-        with self._lock:
-            if self._latest_frame_rgb is None:
-                return None
-
-            return self._latest_frame_rgb.copy()
-
-
-def render_webrtc_camera_capture(slot_key, widget_key, stored_label, capture_label):
-    """Render the controlled camera preview and store the latest corrected frame."""
-    if not STREAMLIT_WEBRTC_AVAILABLE:
-        st.error("Camera scan requires streamlit-webrtc and av. Install requirements and restart the app.")
+def process_camera_snapshot_input(slot_key, image_file, stored_label, widget_key):
+    """Decode and store a still image captured from Streamlit's browser camera."""
+    if image_file is None:
         return
 
-    ctx = webrtc_streamer(
-        key=widget_key,
-        mode=WebRtcMode.SENDRECV,
-        rtc_configuration=RTC_CONFIGURATION,
-        media_stream_constraints=CAMERA_MEDIA_CONSTRAINTS,
-        video_processor_factory=OrientationCorrectingVideoProcessor,
-        async_processing=True,
-        video_receiver_size=1,
-        video_html_attrs=CAMERA_VIDEO_HTML_ATTRS,
+    image_rgb, decode_error, signature = decode_image_file(image_file)
+    if decode_error:
+        st.session_state[slot_key] = None
+        st.error(decode_error)
+        return
+
+    if CAMERA_FRAME_IS_MIRRORED:
+        image_rgb = cv2.flip(image_rgb, 1)
+
+    corrected_signature = build_image_signature(f"{widget_key}:snapshot-corrected:{signature}", image_rgb)
+    store_processed_face_image(slot_key, image_rgb, stored_label, corrected_signature)
+
+
+def render_camera_snapshot_capture(slot_key, widget_key, stored_label, capture_label):
+    """Render the default browser camera snapshot input and store the corrected frame."""
+    snapshot = st.camera_input(
+        capture_label.replace("Capture", "Take"),
+        key=f"{widget_key}_snapshot",
     )
-
-    if st.button(capture_label, key=f"{widget_key}_capture", use_container_width=True):
-        processor = ctx.video_processor
-        if processor is None:
-            st.error("Camera is still starting. Try again in a moment.")
-            return
-
-        image_rgb = processor.get_latest_frame_rgb()
-        if image_rgb is None:
-            st.error("No camera frame is available yet. Try again in a moment.")
-            return
-
-        signature = build_image_signature(f"{widget_key}:webrtc-unmirrored", image_rgb)
-        store_processed_face_image(slot_key, image_rgb, stored_label, signature)
+    process_camera_snapshot_input(slot_key, snapshot, stored_label, widget_key)
 
 
 def build_result_html(similarity, is_match, result_label, face_a_name):
@@ -1094,7 +1040,7 @@ with col_a:
             )
             process_uploaded_image_input("face_a_data", input_a, f"Face A: {face_a_name}")
         else:
-            render_webrtc_camera_capture(
+            render_camera_snapshot_capture(
                 "face_a_data",
                 "face_a_camera",
                 f"Face A: {face_a_name}",
@@ -1141,7 +1087,7 @@ with col_b:
             )
             process_uploaded_image_input("face_b_data", input_b, "Face B")
         else:
-            render_webrtc_camera_capture(
+            render_camera_snapshot_capture(
                 "face_b_data",
                 "face_b_camera",
                 "Face B",
