@@ -18,6 +18,7 @@ SEO_DESCRIPTION = (
     "and OpenVINO CPU inference in a Streamlit face verification app."
 )
 SEO_URL = "https://face-recognition-ai.streamlit.app/"
+SEO_IMAGE_URL = f"{SEO_URL.rstrip('/')}/app/static/social-preview.png"
 SEO_KEYWORDS = (
     "face recognition, face verification, ArcFace, OpenVINO, Haar Cascade, "
     "AI face comparison, Streamlit"
@@ -75,9 +76,21 @@ def inject_seo_metadata():
                 property: "og:url",
                 content: {json.dumps(SEO_URL)}
             }});
+            setMeta('meta[property="og:image"]', {{
+                property: "og:image",
+                content: {json.dumps(SEO_IMAGE_URL)}
+            }});
+            setMeta('meta[property="og:image:width"]', {{
+                property: "og:image:width",
+                content: "1200"
+            }});
+            setMeta('meta[property="og:image:height"]', {{
+                property: "og:image:height",
+                content: "630"
+            }});
             setMeta('meta[name="twitter:card"]', {{
                 name: "twitter:card",
-                content: "summary"
+                content: "summary_large_image"
             }});
             setMeta('meta[name="twitter:title"]', {{
                 name: "twitter:title",
@@ -86,6 +99,14 @@ def inject_seo_metadata():
             setMeta('meta[name="twitter:description"]', {{
                 name: "twitter:description",
                 content: {json.dumps(SEO_DESCRIPTION)}
+            }});
+            setMeta('meta[name="twitter:image"]', {{
+                name: "twitter:image",
+                content: {json.dumps(SEO_IMAGE_URL)}
+            }});
+            setLink('link[rel="image_src"]', {{
+                rel: "image_src",
+                href: {json.dumps(SEO_IMAGE_URL)}
             }});
             setLink('link[rel="canonical"]', {{
                 rel: "canonical",
