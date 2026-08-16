@@ -94,14 +94,31 @@ def inject_custom_css():
                 --shadow: 0 22px 55px rgba(0, 0, 0, 0.36);
             }
 
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+
+            html,
+            body,
+            .stApp,
+            [data-testid="stAppViewContainer"],
+            [data-testid="stAppViewContainer"] > .main {
+                max-width: 100%;
+                overflow-x: hidden;
+            }
+
             .stApp {
                 background: #000000;
                 color: var(--text);
             }
 
             [data-testid="stAppViewContainer"] > .main .block-container {
+                width: 100%;
                 max-width: 1180px;
                 padding: 36px 28px 64px;
+                overflow-x: hidden;
             }
 
             h1, h2, h3, p, label, span, div {
@@ -117,6 +134,9 @@ def inject_custom_css():
             }
 
             .app-header {
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
                 margin-bottom: 28px;
                 padding: 30px;
                 border: 1px solid var(--border);
@@ -140,6 +160,7 @@ def inject_custom_css():
                 font-size: clamp(34px, 5vw, 58px);
                 font-weight: 850;
                 line-height: 1.02;
+                overflow-wrap: break-word;
             }
 
             .app-subtitle {
@@ -148,6 +169,7 @@ def inject_custom_css():
                 color: #d1d5db;
                 font-size: 16px;
                 line-height: 1.7;
+                overflow-wrap: break-word;
             }
 
             .model-pills {
@@ -177,6 +199,9 @@ def inject_custom_css():
             }
 
             .st-key-reference_name_panel {
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
                 margin: 4px 0 12px;
                 padding: 18px 20px;
                 border: 1px solid var(--border);
@@ -226,7 +251,8 @@ def inject_custom_css():
             .st-key-face_b_card {
                 width: 100% !important;
                 min-width: 0 !important;
-                max-width: none !important;
+                max-width: 100% !important;
+                overflow: hidden;
                 height: 100%;
                 padding: 24px;
                 border: 1px solid var(--border);
@@ -410,6 +436,13 @@ def inject_custom_css():
             [data-testid="stFileUploader"] section > div {
                 width: 100% !important;
                 min-width: 0 !important;
+                max-width: 100% !important;
+                flex-wrap: wrap !important;
+            }
+
+            [data-testid="stFileUploader"] section p {
+                max-width: 100%;
+                overflow-wrap: break-word;
             }
 
             [data-testid="stFileUploader"] section:hover {
@@ -583,9 +616,157 @@ def inject_custom_css():
                     border-radius: 22px;
                 }
 
+                .app-title {
+                    font-size: 34px;
+                    line-height: 1.08;
+                }
+
+                .app-subtitle {
+                    font-size: 15px;
+                    line-height: 1.55;
+                }
+            }
+
+            @media (max-width: 900px) {
+                div[data-testid="stHorizontalBlock"]:has(.st-key-face_a_card):has(.st-key-face_b_card) {
+                    grid-template-columns: 1fr !important;
+                    gap: 16px !important;
+                }
+
+                div[data-testid="stHorizontalBlock"]:has(.st-key-face_a_card):has(.st-key-face_b_card) > div[data-testid="stColumn"] {
+                    width: 100% !important;
+                    min-width: 0 !important;
+                    max-width: 100% !important;
+                }
+
+                .st-key-face_a_card,
+                .st-key-face_b_card {
+                    padding: 18px;
+                    border-radius: 18px;
+                    height: auto;
+                }
+
+                .st-key-face_a_card:hover,
+                .st-key-face_b_card:hover {
+                    transform: none;
+                }
+
+                .input-card-header {
+                    grid-template-columns: 48px minmax(0, 1fr);
+                    column-gap: 14px;
+                    min-height: 0;
+                    margin-bottom: 16px;
+                    align-items: center;
+                }
+
+                .avatar-token {
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 14px;
+                    font-size: 16px;
+                }
+
+                .input-card-title {
+                    font-size: 28px;
+                    line-height: 1.12;
+                    overflow-wrap: normal;
+                    word-break: normal;
+                }
+
+                .input-card-caption {
+                    margin-top: 4px !important;
+                    font-size: 14px;
+                }
+
+                .st-key-action_row [data-testid="stHorizontalBlock"]:has(.st-key-compare_button):has(.st-key-reset_button) {
+                    flex-direction: column !important;
+                    align-items: stretch !important;
+                    gap: 10px !important;
+                }
+
+                .st-key-action_row [data-testid="stHorizontalBlock"]:has(.st-key-compare_button):has(.st-key-reset_button) > [data-testid="stColumn"]:first-child,
+                .st-key-action_row [data-testid="stHorizontalBlock"]:has(.st-key-compare_button):has(.st-key-reset_button) > [data-testid="stColumn"]:last-child {
+                    flex: 0 0 auto !important;
+                    width: 100% !important;
+                    min-width: 0 !important;
+                    max-width: 100% !important;
+                }
+            }
+
+            @media (max-width: 520px) {
+                [data-testid="stAppViewContainer"] > .main .block-container {
+                    padding: 18px 12px 40px;
+                }
+
+                .app-header {
+                    margin-bottom: 20px;
+                    padding: 18px;
+                    border-radius: 18px;
+                }
+
+                .app-title {
+                    font-size: 30px;
+                }
+
+                .model-pills {
+                    gap: 8px;
+                }
+
+                .model-pill {
+                    padding: 7px 10px;
+                    font-size: 12px;
+                }
+
+                .section-title {
+                    margin-top: 18px;
+                    font-size: 20px;
+                }
+
+                .st-key-reference_name_panel,
+                .st-key-face_a_card,
+                .st-key-face_b_card {
+                    padding: 16px;
+                    border-radius: 16px;
+                }
+
+                .input-card-header {
+                    grid-template-columns: 42px minmax(0, 1fr);
+                    column-gap: 12px;
+                    margin-bottom: 14px;
+                }
+
+                .avatar-token {
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 12px;
+                    font-size: 15px;
+                }
+
+                .input-card-title {
+                    font-size: 24px;
+                }
+
+                .input-card-caption {
+                    font-size: 13px;
+                }
+
                 div[role="radiogroup"] {
                     grid-template-columns: 1fr;
                     border-radius: 18px;
+                }
+
+                div[role="radiogroup"] label {
+                    height: 40px !important;
+                    min-height: 40px;
+                    padding: 0 10px;
+                }
+
+                div[role="radiogroup"] label p {
+                    white-space: normal;
+                }
+
+                [data-testid="stFileUploader"] section {
+                    min-height: 92px;
                 }
             }
         </style>
