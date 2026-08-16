@@ -4,6 +4,8 @@ A Face Verification System built with:
 - **Haar Cascade** for face detection
 - **ArcFace ResNet100** (via OpenVINO) for face verification
 
+Live demo: [https://face-recognition-ai.streamlit.app/](https://face-recognition-ai.streamlit.app/)
+
 Enter a reference name, upload or scan Face A, then upload or scan Face B to
 check. If Face B has a cosine similarity score of at least `0.70` against
 Face A, the app displays the reference name. Otherwise, it displays
