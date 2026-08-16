@@ -760,11 +760,21 @@ def process_camera_snapshot_input(slot_key, image_file, stored_label, widget_key
     store_processed_face_image(slot_key, image_rgb, stored_label, corrected_signature)
 
 
+def get_input_reset_nonce():
+    """Return the current input version used to refresh stateful media widgets."""
+    return st.session_state.setdefault("input_reset_nonce", 0)
+
+
+def build_resettable_widget_key(base_key):
+    """Build a widget key that changes whenever the user resets the form."""
+    return f"{base_key}_{get_input_reset_nonce()}"
+
+
 def render_camera_snapshot_capture(slot_key, widget_key, stored_label, capture_label):
     """Render the default browser camera snapshot input and store the corrected frame."""
     snapshot = st.camera_input(
         capture_label.replace("Capture", "Take"),
-        key=f"{widget_key}_snapshot",
+        key=build_resettable_widget_key(f"{widget_key}_snapshot"),
     )
     process_camera_snapshot_input(slot_key, snapshot, stored_label, widget_key)
 
@@ -968,16 +978,10 @@ def show_result_dialog(similarity, threshold, reference_name, is_match, image_a,
 
 def reset_captured_faces():
     """Clear captured face data and input widgets."""
-    for key in [
-        "face_a_data",
-        "face_b_data",
-        "face_a_upload",
-        "face_a_camera",
-        "face_b_upload",
-        "face_b_camera",
-        "face_a_name",
-    ]:
+    for key in ["face_a_data", "face_b_data"]:
         st.session_state.pop(key, None)
+
+    st.session_state["input_reset_nonce"] = get_input_reset_nonce() + 1
 
 
 # ==========================================
@@ -1013,7 +1017,7 @@ with st.container(key="reference_name_panel"):
         "Reference identity name",
         value=DEFAULT_REFERENCE_NAME,
         placeholder=DEFAULT_REFERENCE_NAME,
-        key="face_a_name",
+        key=build_resettable_widget_key("face_a_name"),
     )
 
 face_a_name = raw_face_a_name.strip() or DEFAULT_REFERENCE_NAME
@@ -1046,7 +1050,7 @@ with col_a:
             input_a = st.file_uploader(
                 "Image A reference",
                 type=["jpg", "jpeg", "png"],
-                key="face_a_upload",
+                key=build_resettable_widget_key("face_a_upload"),
             )
             process_uploaded_image_input("face_a_data", input_a, f"Face A: {face_a_name}")
         else:
@@ -1093,7 +1097,7 @@ with col_b:
             input_b = st.file_uploader(
                 "Image B comparison",
                 type=["jpg", "jpeg", "png"],
-                key="face_b_upload",
+                key=build_resettable_widget_key("face_b_upload"),
             )
             process_uploaded_image_input("face_b_data", input_b, "Face B")
         else:
