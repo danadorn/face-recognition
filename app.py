@@ -4,6 +4,8 @@ import numpy as np
 import urllib.request
 import hashlib
 import threading
+import base64
+import textwrap
 from pathlib import Path
 import streamlit as st
 import openvino as ov
@@ -86,8 +88,9 @@ def get_theme_palette(theme_mode):
             "accent_strong": "#FFB14A",
             "accent_soft": "rgba(255, 145, 0, 0.14)",
             "accent_border": "rgba(255, 145, 0, 0.40)",
+            "danger": "#ef4444",
             "avatar_text": "#9a3412",
-            "panel_bg": "rgba(255, 255, 255, 0.94)",
+            "panel_bg": "#ffffff",
             "card_bg": "rgba(255, 255, 255, 0.98)",
             "pill_bg": "#fff7ed",
             "label_text": "#1e293b",
@@ -131,6 +134,7 @@ def get_theme_palette(theme_mode):
         "accent_strong": "#FFB14A",
         "accent_soft": "rgba(255, 145, 0, 0.16)",
         "accent_border": "rgba(255, 145, 0, 0.38)",
+        "danger": "#ef4444",
         "avatar_text": "#FFE0B3",
         "panel_bg": "rgba(11, 11, 11, 0.92)",
         "card_bg": "rgba(11, 11, 11, 0.96)",
@@ -180,6 +184,7 @@ def build_theme_variables(theme_mode):
         "accent_strong": "accent-strong",
         "accent_soft": "accent-soft",
         "accent_border": "accent-border",
+        "danger": "danger",
         "avatar_text": "avatar-text",
         "panel_bg": "panel-bg",
         "card_bg": "card-bg",
@@ -211,8 +216,6 @@ def build_theme_variables(theme_mode):
     lines.extend(
         [
             "                --info: var(--accent);",
-            "                --success: #22c55e;",
-            "                --danger: #ef4444;",
             "                --radius: 20px;",
         ]
     )
@@ -252,8 +255,38 @@ __THEME_VARIABLES__
                 background: var(--bg);
             }
 
-            div[role="dialog"] {
+            [role="dialog"],
+            [aria-modal="true"],
+            [data-testid="stDialog"],
+            div[data-baseweb="modal"] [role="dialog"] {
                 background: var(--panel-bg) !important;
+                color: var(--text) !important;
+                position: relative;
+                z-index: 1000000 !important;
+            }
+
+            div[data-baseweb="modal"] > div:first-child {
+                background: rgba(0, 0, 0, 0.1) !important;
+                backdrop-filter: none !important;
+                -webkit-backdrop-filter: none !important;
+                z-index: 999999 !important;
+            }
+
+            [role="dialog"] h1,
+            [role="dialog"] h2,
+            [role="dialog"] h3,
+            [role="dialog"] p,
+            [role="dialog"] span,
+            [aria-modal="true"] h1,
+            [aria-modal="true"] h2,
+            [aria-modal="true"] h3,
+            [aria-modal="true"] p,
+            [aria-modal="true"] span {
+                color: inherit;
+            }
+
+            [role="dialog"] button,
+            [aria-modal="true"] button {
                 color: var(--text) !important;
             }
 
@@ -634,6 +667,37 @@ __THEME_VARIABLES__
             [data-testid="stCameraInput"] img {
                 transform: scaleX(-1);
                 transform-origin: center;
+            }
+
+            [data-testid="stCameraInput"] button {
+                width: 100% !important;
+                min-height: 42px !important;
+                border: 1px solid var(--border) !important;
+                border-radius: 0 0 10px 10px !important;
+                background: var(--field-bg) !important;
+                color: var(--text) !important;
+                box-shadow: none !important;
+                opacity: 1 !important;
+            }
+
+            [data-testid="stCameraInput"] button *,
+            [data-testid="stCameraInput"] button p,
+            [data-testid="stCameraInput"] button span {
+                color: var(--text) !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+            }
+
+            [data-testid="stCameraInput"] button:hover {
+                border-color: var(--accent-strong) !important;
+                background: var(--accent-soft) !important;
+                color: var(--text) !important;
+            }
+
+            [data-testid="stCameraInput"] button:hover *,
+            [data-testid="stCameraInput"] button:hover p,
+            [data-testid="stCameraInput"] button:hover span {
+                color: var(--text) !important;
             }
 
             [data-testid="stImage"] img {
@@ -1148,10 +1212,132 @@ def render_camera_snapshot_capture(slot_key, widget_key, stored_label, capture_l
     process_camera_snapshot_input(slot_key, snapshot, stored_label, widget_key)
 
 
-def build_result_html(similarity, is_match, result_label, face_a_name):
+def image_rgb_to_data_uri(image_rgb):
+    """Encode an RGB image array for inline modal display."""
+    image_bgr = cv2.cvtColor(image_rgb, cv2.COLOR_RGB2BGR)
+    success, encoded_image = cv2.imencode(".png", image_bgr)
+    if not success:
+        return ""
+
+    image_base64 = base64.b64encode(encoded_image.tobytes()).decode("ascii")
+    return f"data:image/png;base64,{image_base64}"
+
+
+def render_html_fragment(html):
+    """Render custom HTML without letting Markdown reinterpret nested markup."""
+    if hasattr(st, "html"):
+        st.html(html)
+    else:
+        st.markdown(html, unsafe_allow_html=True)
+
+
+def build_detected_faces_html(image_a, image_b, reference_name, theme_mode=None):
+    """Build themed detected-face image frames for the result modal."""
+    palette = get_theme_palette(theme_mode or st.session_state.get("app_theme", "Dark"))
+    image_a_uri = image_rgb_to_data_uri(image_a)
+    image_b_uri = image_rgb_to_data_uri(image_b)
+
+    return textwrap.dedent(f"""
+    <style>
+        .result-face-grid {{
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin: 12px 0 18px;
+        }}
+
+        .result-face-frame {{
+            position: relative;
+            overflow: hidden;
+            border-radius: 18px;
+            border: 1px solid {palette["border"]};
+            background: {palette["result_panel_bg"]};
+            box-shadow: {palette["image_shadow"]};
+        }}
+
+        .result-face-frame img {{
+            display: block;
+            width: 100%;
+            aspect-ratio: 16 / 9;
+            object-fit: cover;
+        }}
+
+        .result-face-corner {{
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-color: {palette["accent"]};
+            pointer-events: none;
+        }}
+
+        .result-face-corner.top-left {{
+            top: 12px;
+            left: 12px;
+            border-top: 2px solid;
+            border-left: 2px solid;
+        }}
+
+        .result-face-corner.top-right {{
+            top: 12px;
+            right: 12px;
+            border-top: 2px solid;
+            border-right: 2px solid;
+        }}
+
+        .result-face-corner.bottom-left {{
+            bottom: 12px;
+            left: 12px;
+            border-bottom: 2px solid;
+            border-left: 2px solid;
+        }}
+
+        .result-face-corner.bottom-right {{
+            right: 12px;
+            bottom: 12px;
+            border-right: 2px solid;
+            border-bottom: 2px solid;
+        }}
+
+        .result-face-caption {{
+            padding: 10px 12px 12px;
+            color: {palette["muted"]};
+            font-size: 12px;
+            font-weight: 700;
+            text-align: center;
+        }}
+
+        @media (max-width: 760px) {{
+            .result-face-grid {{
+                grid-template-columns: 1fr;
+            }}
+        }}
+    </style>
+    <div class="result-face-grid">
+        <figure class="result-face-frame">
+            <img src="{image_a_uri}" alt="Detected Face A: {reference_name}">
+            <span class="result-face-corner top-left"></span>
+            <span class="result-face-corner top-right"></span>
+            <span class="result-face-corner bottom-left"></span>
+            <span class="result-face-corner bottom-right"></span>
+            <figcaption class="result-face-caption">Detected Face A: {reference_name}</figcaption>
+        </figure>
+        <figure class="result-face-frame">
+            <img src="{image_b_uri}" alt="Detected Face B Result">
+            <span class="result-face-corner top-left"></span>
+            <span class="result-face-corner top-right"></span>
+            <span class="result-face-corner bottom-left"></span>
+            <span class="result-face-corner bottom-right"></span>
+            <figcaption class="result-face-caption">Detected Face B Result</figcaption>
+        </figure>
+    </div>
+    """).strip()
+
+
+def build_result_html(similarity, is_match, result_label, face_a_name, theme_mode=None):
     """Build the styled result card shown after verification"""
-    palette = get_theme_palette(st.session_state.get("app_theme", "Dark"))
-    if st.session_state.get("app_theme") == "Light":
+    active_theme = theme_mode or st.session_state.get("app_theme", "Dark")
+    palette = get_theme_palette(active_theme)
+    if active_theme == "Light":
         match_badge_bg = "#dcfce7"
         match_badge_text = "#166534"
         no_match_badge_bg = "#fee2e2"
@@ -1179,7 +1365,7 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
 
     display_score = max(0, min(100, similarity * 100))
 
-    return f"""
+    return textwrap.dedent(f"""
     <div style="
         max-width:850px;
         margin:28px auto 12px;
@@ -1301,7 +1487,7 @@ def build_result_html(similarity, is_match, result_label, face_a_name):
             </div>
         </div>
     </div>
-    """
+    """).strip()
 
 
 def verify_stored_faces(face_a, face_b, face_a_name):
@@ -1329,8 +1515,9 @@ def verify_stored_faces(face_a, face_b, face_a_name):
 def show_result_dialog(similarity, threshold, reference_name, is_match, image_a, image_b, result_html):
     """Render the comparison output in a modal dialog."""
     palette = get_theme_palette(st.session_state.get("app_theme", "Dark"))
-    st.markdown(
-        f"""
+    decision_color = "#22c55e" if is_match else "#ef4444"
+    render_html_fragment(
+        textwrap.dedent(f"""
         <div style="
             margin:0 0 12px;
             color:{palette["muted"]};
@@ -1343,10 +1530,9 @@ def show_result_dialog(similarity, threshold, reference_name, is_match, image_a,
             &nbsp; • &nbsp;
             Threshold: <span style="color:{palette["text"]};">{threshold:.2f}</span>
             &nbsp; • &nbsp;
-            Decision: <span style="color:{'#22c55e' if is_match else '#ef4444'};">{"MATCH" if is_match else "NOT MATCH"}</span>
+            Decision: <span style="color:{decision_color};">{"MATCH" if is_match else "NOT MATCH"}</span>
         </div>
-        """,
-        unsafe_allow_html=True,
+        """).strip()
     )
 
     out_a, out_b = st.columns(2)
@@ -1355,7 +1541,7 @@ def show_result_dialog(similarity, threshold, reference_name, is_match, image_a,
     with out_b:
         st.image(image_b, caption="Detected Face B Result", use_container_width=True)
 
-    st.markdown(result_html, unsafe_allow_html=True)
+    render_html_fragment(result_html)
 
 
 def reset_captured_faces():
