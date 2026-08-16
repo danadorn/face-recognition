@@ -18,7 +18,6 @@ SEO_DESCRIPTION = (
     "and OpenVINO CPU inference in a Streamlit face verification app."
 )
 SEO_URL = "https://face-recognition-ai.streamlit.app/"
-SEO_IMAGE_URL = f"{SEO_URL.rstrip('/')}/app/static/social-preview.png"
 SEO_KEYWORDS = (
     "face recognition, face verification, ArcFace, OpenVINO, Haar Cascade, "
     "AI face comparison, Streamlit"
@@ -76,21 +75,9 @@ def inject_seo_metadata():
                 property: "og:url",
                 content: {json.dumps(SEO_URL)}
             }});
-            setMeta('meta[property="og:image"]', {{
-                property: "og:image",
-                content: {json.dumps(SEO_IMAGE_URL)}
-            }});
-            setMeta('meta[property="og:image:width"]', {{
-                property: "og:image:width",
-                content: "1200"
-            }});
-            setMeta('meta[property="og:image:height"]', {{
-                property: "og:image:height",
-                content: "630"
-            }});
             setMeta('meta[name="twitter:card"]', {{
                 name: "twitter:card",
-                content: "summary_large_image"
+                content: "summary"
             }});
             setMeta('meta[name="twitter:title"]', {{
                 name: "twitter:title",
@@ -99,14 +86,6 @@ def inject_seo_metadata():
             setMeta('meta[name="twitter:description"]', {{
                 name: "twitter:description",
                 content: {json.dumps(SEO_DESCRIPTION)}
-            }});
-            setMeta('meta[name="twitter:image"]', {{
-                name: "twitter:image",
-                content: {json.dumps(SEO_IMAGE_URL)}
-            }});
-            setLink('link[rel="image_src"]', {{
-                rel: "image_src",
-                href: {json.dumps(SEO_IMAGE_URL)}
             }});
             setLink('link[rel="canonical"]', {{
                 rel: "canonical",
@@ -175,19 +154,6 @@ def load_models():
 DEFAULT_REFERENCE_NAME = "Reference"
 THRESHOLD = 0.70
 CAMERA_FRAME_IS_MIRRORED = True
-
-
-def file_to_data_uri(path, mime_type="image/png"):
-    """Encode a small local asset for inline HTML display."""
-    try:
-        asset_base64 = base64.b64encode(Path(path).read_bytes()).decode("ascii")
-    except OSError:
-        return ""
-
-    return f"data:{mime_type};base64,{asset_base64}"
-
-
-LOGO_DATA_URI = file_to_data_uri("face.png")
 
 # ==========================================
 # UI STYLING
@@ -440,66 +406,6 @@ __THEME_VARIABLES__
                 border-radius: 28px;
                 background: var(--panel-bg);
                 box-shadow: var(--shadow);
-            }
-
-            .preview-header {
-                min-height: 350px;
-                padding: 44px 46px;
-                border: 0;
-                border-radius: 8px;
-                background: #f7f8f5;
-                color: #070707;
-            }
-
-            .preview-brand-row {
-                display: flex;
-                align-items: center;
-                gap: 22px;
-                margin-bottom: 34px;
-            }
-
-            .preview-logo {
-                width: 54px;
-                height: 54px;
-                border-radius: 50%;
-                object-fit: cover;
-                flex: 0 0 auto;
-            }
-
-            .preview-brand-name {
-                color: #111827;
-                font-size: clamp(15px, 2.1vw, 20px);
-                letter-spacing: 0.42em;
-                font-weight: 500;
-                text-transform: uppercase;
-                white-space: nowrap;
-            }
-
-            .preview-kicker {
-                margin: 0 0 12px;
-                color: #a45f18;
-                font-size: clamp(13px, 1.7vw, 18px);
-                letter-spacing: 0.58em;
-                font-weight: 500;
-                text-transform: uppercase;
-            }
-
-            .preview-title {
-                margin: 0;
-                color: #070707;
-                font-size: clamp(44px, 7vw, 74px);
-                font-weight: 400;
-                line-height: 1;
-                letter-spacing: 0;
-            }
-
-            .preview-subtitle {
-                max-width: 820px;
-                margin: 26px 0 0;
-                color: #4a4a4a !important;
-                font-size: clamp(18px, 2.5vw, 30px);
-                line-height: 1.18;
-                font-weight: 400;
             }
 
             .eyebrow {
@@ -1138,42 +1044,6 @@ __THEME_VARIABLES__
                     border-radius: 18px;
                 }
 
-                .preview-header {
-                    min-height: 290px;
-                    padding: 28px 24px;
-                    border-radius: 8px;
-                }
-
-                .preview-brand-row {
-                    gap: 14px;
-                    margin-bottom: 26px;
-                }
-
-                .preview-logo {
-                    width: 42px;
-                    height: 42px;
-                }
-
-                .preview-brand-name {
-                    font-size: 12px;
-                    letter-spacing: 0.26em;
-                    white-space: normal;
-                }
-
-                .preview-kicker {
-                    font-size: 11px;
-                    letter-spacing: 0.36em;
-                }
-
-                .preview-title {
-                    font-size: 40px;
-                }
-
-                .preview-subtitle {
-                    font-size: 17px;
-                    line-height: 1.32;
-                }
-
                 .app-title {
                     font-size: 30px;
                 }
@@ -1786,19 +1656,20 @@ with st.container(key="theme_panel"):
     )
 
 st.markdown(
-    f"""
-    <section class="app-header preview-header">
-        <div class="preview-brand-row">
-            <img class="preview-logo" src="{LOGO_DATA_URI}" alt="Identity Match Studio logo">
-            <div class="preview-brand-name">Identity Match Studio</div>
-        </div>
-        <div class="preview-kicker">Artificial Intelligence Project</div>
-        <h1 class="preview-title">Face Recognition</h1>
-        <p class="preview-subtitle">
-            A Streamlit application that verifies whether two face images belong to the same
-            identity, using Haar Cascade detection, ArcFace ResNet100 embeddings, and cosine
-            similarity, accelerated with OpenVINO.
+    """
+    <section class="app-header">
+        <div class="eyebrow">AI face verification</div>
+        <h1 class="app-title">Identity Match Studio</h1>
+        <p class="app-subtitle">
+            Capture or upload a reference face, compare a second face against it,
+            and review the cosine similarity decision with the same ArcFace pipeline.
         </p>
+        <div class="model-pills">
+            <span class="model-pill">Haar Cascade detection</span>
+            <span class="model-pill">ArcFace ResNet100</span>
+            <span class="model-pill">OpenVINO CPU inference</span>
+            <span class="model-pill">Threshold 0.70</span>
+        </div>
     </section>
     """,
     unsafe_allow_html=True,
