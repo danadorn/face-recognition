@@ -11,14 +11,14 @@ Face A, the app displays the reference name. Otherwise, it displays
 
 Each face can use either:
 - **Upload Image**
-- **Scan with Camera** using `streamlit-webrtc`
+- **Scan with Camera** using Streamlit's built-in snapshot camera input
 
 The camera option captures from the user's browser instead of the server
-camera. The WebRTC frame processor corrects mirrored camera frames before both
-the live preview and the saved frame enter the face detection and ArcFace
-pipeline. The UI uses a custom dark-mode card layout with styled controls and
-result cards. Comparison results open in a native Streamlit dialog modal so the
-decision is shown immediately after clicking Compare.
+camera. Camera snapshots are corrected for mirrored webcam output before they
+enter the face detection and ArcFace pipeline. The UI uses a custom dark-mode
+card layout with styled controls and result cards. Comparison results open in a
+native Streamlit dialog modal so the decision is shown immediately after
+clicking Compare.
 
 ## Run locally
 
