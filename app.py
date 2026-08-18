@@ -298,6 +298,7 @@ def build_theme_variables(theme_mode):
         "hover_shadow": "hover-shadow",
         "image_shadow": "image-shadow",
         "button_shadow": "button-shadow",
+        "result_panel_bg": "result-panel-bg",
     }
     lines = [f"                --{css_name}: {palette[key]};" for key, css_name in css_names.items()]
     lines.extend(
@@ -357,6 +358,27 @@ __THEME_VARIABLES__
                 backdrop-filter: none !important;
                 -webkit-backdrop-filter: none !important;
                 z-index: 999999 !important;
+            }
+
+            div[data-baseweb="modal"] {
+                align-items: flex-start !important;
+                overflow-y: auto !important;
+            }
+
+            div[data-baseweb="modal"] [role="dialog"],
+            [data-testid="stDialog"],
+            [aria-modal="true"] {
+                width: min(1120px, calc(100vw - 32px)) !important;
+                max-width: calc(100vw - 32px) !important;
+                max-height: calc(100vh - 40px) !important;
+                margin: 20px auto !important;
+                overflow-y: auto !important;
+                overflow-x: hidden !important;
+            }
+
+            [role="dialog"] [data-testid="stVerticalBlock"],
+            [aria-modal="true"] [data-testid="stVerticalBlock"] {
+                max-width: 100% !important;
             }
 
             [role="dialog"] h1,
@@ -793,6 +815,24 @@ __THEME_VARIABLES__
                 box-shadow: var(--image-shadow);
             }
 
+            [role="dialog"] [data-testid="stImage"],
+            [aria-modal="true"] [data-testid="stImage"] {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                width: 100%;
+            }
+
+            [role="dialog"] [data-testid="stImage"] img,
+            [aria-modal="true"] [data-testid="stImage"] img {
+                width: auto !important;
+                max-width: 100% !important;
+                height: auto !important;
+                max-height: min(46vh, 440px) !important;
+                object-fit: contain !important;
+                background: var(--result-panel-bg);
+            }
+
             [data-testid="stImageCaption"] {
                 color: var(--muted);
                 font-weight: 700;
@@ -856,11 +896,31 @@ __THEME_VARIABLES__
             }
 
             .st-key-theme_panel {
-                width: min(280px, 100%);
-                margin: 0 0 18px auto;
+                width: 100%;
+                margin: 0 0 18px;
+                display: flex;
+                justify-content: flex-end;
+            }
+
+            .st-key-theme_panel [data-testid="stRadio"] {
+                width: 172px !important;
+                min-width: 172px !important;
+                max-width: 172px !important;
+            }
+
+            .st-key-theme_panel [data-testid="stVerticalBlock"],
+            .st-key-theme_panel [data-testid="stElementContainer"] {
+                align-items: flex-end !important;
+                align-self: flex-end !important;
+                width: auto !important;
+                max-width: 100% !important;
             }
 
             .st-key-theme_panel div[role="radiogroup"] {
+                width: 172px !important;
+                min-width: 172px !important;
+                max-width: 172px !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                 border-radius: 999px;
             }
 
@@ -1105,8 +1165,49 @@ __THEME_VARIABLES__
                     white-space: normal;
                 }
 
+                .st-key-theme_panel {
+                    margin-bottom: 16px;
+                    justify-content: flex-end;
+                }
+
+                .st-key-theme_panel [data-testid="stRadio"],
+                .st-key-theme_panel div[role="radiogroup"] {
+                    width: 156px !important;
+                    min-width: 156px !important;
+                    max-width: 156px !important;
+                }
+
+                .st-key-theme_panel div[role="radiogroup"] {
+                    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                    border-radius: 999px;
+                }
+
+                .st-key-theme_panel div[role="radiogroup"] label {
+                    height: 38px !important;
+                    min-height: 38px;
+                    padding: 0 8px;
+                }
+
+                .st-key-theme_panel div[role="radiogroup"] label p {
+                    white-space: nowrap;
+                }
+
                 [data-testid="stFileUploader"] section {
                     min-height: 92px;
+                }
+
+                div[data-baseweb="modal"] [role="dialog"],
+                [data-testid="stDialog"],
+                [aria-modal="true"] {
+                    width: calc(100vw - 20px) !important;
+                    max-width: calc(100vw - 20px) !important;
+                    max-height: calc(100vh - 20px) !important;
+                    margin: 10px auto !important;
+                }
+
+                [role="dialog"] [data-testid="stImage"] img,
+                [aria-modal="true"] [data-testid="stImage"] img {
+                    max-height: min(34vh, 320px) !important;
                 }
             }
         </style>
